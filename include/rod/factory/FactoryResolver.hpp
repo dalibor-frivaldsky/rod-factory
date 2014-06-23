@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include <tuple>
+
 #include <rod/annotation/Resolver.hpp>
 
 #include <rod/factory/GetFactoryDeps.hpp>
@@ -44,12 +46,12 @@ namespace rod
 			using GetDependencies = factoryResolver::GetDependencies< FactoryType >;
 
 
-			template< typename FactoryType, typename... Deps >
+			template< typename FactoryType, typename... Dep >
 			static
 			FactoryType
-			resolve( Deps&... deps )
+			resolve( Dep&&... dep )
 			{
-				return FactoryType();
+				return FactoryType( std::make_tuple( dep... ) );
 			}
 		};
 		
