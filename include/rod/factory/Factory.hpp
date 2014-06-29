@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <tuple>
+#include <utility>
 
 #include <rod/TypeList.hpp>
 #include <rod/common/Sequence.hpp>
@@ -40,15 +41,15 @@ namespace rod
 			};
 
 
-			template< typename ToCreate >
+			template< typename ToCreate, typename... Provided >
 			struct Creator
 			{
 				template< typename ArgsTuple, int... Seq >
 				static
 				ToCreate
-				create( ArgsTuple& argsTuple, rod::common::Sequence< Seq... >&& )
+				create( ArgsTuple& argsTuple, rod::common::Sequence< Seq... >&&, Provided&&... provided )
 				{
-					return ToCreate( std::get< Seq >( argsTuple )()... );
+					return ToCreate( std::get< Seq >( argsTuple )()..., std::forward< Provided >( provided )... );
 				}
 			};
 			
@@ -71,11 +72,12 @@ namespace rod
 
 
 			Type
-			create()
+			create( ToBeProvided&&... provided )
 			{
-				return factory::Creator< Type >::create(
+				return factory::Creator< Type, ToBeProvided... >::create(
 							deps,
-							typename rod::common::GenerateSequence< std::tuple_size< depsTuple >::value >::r() );
+							typename rod::common::GenerateSequence< std::tuple_size< depsTuple >::value >::r(),
+							std::forward< ToBeProvided >( provided )... );
 			}
 		};
 		
