@@ -1,2 +1,6 @@
+test/**/*.obj
+test/**/*.out
+test/**/*.exe
+
 rod-factory.sublime-project
 rod-factory.sublime-workspace
