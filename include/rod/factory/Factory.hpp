@@ -59,6 +59,7 @@ namespace rod
 		class Factory
 		{
 		private:
+			using This = Factory< Type, ToBeProvided... >;
 			using depsTuple = typename factory::DepsTuple< Type, ToBeProvided... >::r;
 
 			depsTuple	deps;
@@ -66,8 +67,17 @@ namespace rod
 
 		public:
 
-			Factory( depsTuple&& deps ):
-			  deps( std::forward< depsTuple >( deps ) )
+			template< typename... Dependency >
+			Factory( std::function< Dependency >&&... dependency ):
+			  deps( std::make_tuple( std::move( dependency )... ) )
+			{}
+
+			Factory( const This& other ):
+			  deps( other.deps )
+			{}
+
+			Factory( This&& other ):
+			  deps( std::move( other.deps ) )
 			{}
 
 

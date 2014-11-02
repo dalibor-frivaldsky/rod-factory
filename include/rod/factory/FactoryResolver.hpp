@@ -1,8 +1,10 @@
 #pragma once
 
 
+#include <functional>
 #include <tuple>
 
+#include <rod/TypeList.hpp>
 #include <rod/annotation/Resolver.hpp>
 
 #include <rod/factory/GetFactoryDeps.hpp>
@@ -20,7 +22,7 @@ namespace rod
 		class FactoryResolver;
 
 
-		namespace factoryResolver
+		namespace detail
 		{
 
 			template< typename FactoryType >
@@ -30,6 +32,35 @@ namespace rod
 			struct GetDependencies< Factory< Type, ToBeProvided... > >
 			{
 				using r = typename GetFactoryDeps< Type, ToBeProvided... >::r;
+			};
+
+
+			template< typename Dependency >
+			struct CreateResolveClosure
+			{
+				template< typename Context >
+				static
+				std::function< Dependency() >
+				create( Context& context )
+				{
+					return [&] () -> decltype( resolve< Dependency >( context ) ) { return resolve< Dependency >( context ); };
+				}
+			};
+
+
+			template< typename FactoryType, typename Dependencies >
+			struct CreateFactory;
+
+			template< typename FactoryType, typename... Dependency >
+			struct CreateFactory< FactoryType, TypeList< Dependency... > >
+			{
+				template< typename Context >
+				static
+				FactoryType
+				create( Context& context )
+				{
+					return FactoryType( CreateResolveClosure< Dependency >::create( context )... );
+				}
 			};
 			
 		}
@@ -42,16 +73,14 @@ namespace rod
 			using Resolver = annotation::Resolver<
 								FactorySelector >;
 
-			template< typename FactoryType >
-			using GetDependencies = factoryResolver::GetDependencies< FactoryType >;
-
-
-			template< typename FactoryType, typename... Dep >
+			template< typename FactoryType, typename Context >
 			static
 			FactoryType
-			resolve( Dep&&... dep )
+			resolve( Context& context )
 			{
-				return FactoryType( std::make_tuple( dep... ) );
+				return detail::CreateFactory<
+						FactoryType,
+						typename detail::GetDependencies< FactoryType >::r >::create( context );
 			}
 		};
 		

@@ -2,7 +2,7 @@
 
 
 #include <rod/TypeList.hpp>
-#include <rod/annotation/ConstructWith.hpp>
+#include <rod/annotation/Requires.hpp>
 
 
 
@@ -17,10 +17,10 @@ namespace rod
 		struct GetFactoryDeps
 		{
 		private:
-			using typeDeps = typename rod::annotation::GetConstructionArguments< Type >::r;
+			using TypeDeps = typename rod::annotation::GetRequirements< Type >::r;
 
 		public:
-			using r = typename typeDeps::template RemoveList< TypeList< ToBeProvided... > >::r;
+			using r = typename TypeDeps::template RemoveList< TypeList< ToBeProvided... > >::r;
 		};
 		
 	}

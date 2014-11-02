@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include <rod/Contextual.hpp>
+#include <rod/Extend.hpp>
 #include <rod/Rod.hpp>
 
 #include <rod/factory/FactoryResolver.hpp>
@@ -21,30 +21,19 @@ struct Type
 };
 
 
-template< typename Context >
-class Domain:
-  public rod::Contextual< Context,
-  						  rod::factory::FactoryResolver >
-{
-public:
-
-	ROD_Contextual_Constructor( Domain )
-
-	void
-	enter()
-	{
-		auto typeFactory = rod::resolve< rod::factory::Factory< Type > >( this );
-		auto type = typeFactory.create();
-
-		type.method();
-	}
-};
-
-
 void
 test()
 {
-	rod::enterPlain< Domain >();
+	rod::enter(
+	[] ( rod::Root& root )
+	{
+		auto	canResolve = rod::extend( root ).with< rod::factory::FactoryResolver >()();
+
+		auto	typeFactory = rod::resolve< rod::factory::Factory< Type > >( canResolve );
+		auto	type = typeFactory.create();
+
+		type.method();
+	});
 
 	assert( called );
 }

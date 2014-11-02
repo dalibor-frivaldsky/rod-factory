@@ -1,9 +1,9 @@
 #include <cassert>
 
-#include <rod/AsSingleton.hpp>
-#include <rod/Contextual.hpp>
+#include <rod/Extend.hpp>
 #include <rod/Rod.hpp>
-#include <rod/annotation/ConstructWith.hpp>
+#include <rod/Singleton.hpp>
+#include <rod/annotation/Requires.hpp>
 
 #include <rod/factory/FactoryResolver.hpp>
 
@@ -32,7 +32,7 @@ private:
 
 
 public:
-	using ConstructWith = rod::annotation::ConstructWith< Component&, int >;
+	using Requires = rod::annotation::Requires< Component&, int >;
 
 	Type( Component& component, int v ):
 	  component( component ),
@@ -47,31 +47,22 @@ public:
 };
 
 
-template< typename Context >
-class Domain:
-  public rod::Contextual< Context,
-  						  rod::factory::FactoryResolver,
-  						  rod::AsSingleton< Component > >
-{
-public:
-
-	ROD_Contextual_Constructor( Domain )
-
-	void
-	enter()
-	{
-		auto typeFactory = rod::resolve< rod::factory::Factory< Type, int > >( this );
-		auto type = typeFactory.create( 10 );
-
-		type.method();
-	}
-};
-
-
 void
 test()
 {
-	rod::enterPlain< Domain >();
+	rod::enter(
+	[] ( rod::Root& root )
+	{
+		auto context = rod::extend( root )
+						.with<
+							rod::factory::FactoryResolver,
+							rod::Singleton< Component > >()();
+
+		auto typeFactory = rod::resolve< rod::factory::Factory< Type, int > >( context );
+		auto type = typeFactory.create( 10 );
+
+		type.method();
+	});
 
 	assert( value == 10 );
 }
