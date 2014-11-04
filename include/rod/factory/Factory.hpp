@@ -44,6 +44,14 @@ namespace rod
 			template< typename ToCreate, typename... Provided >
 			struct Creator
 			{
+				template< typename ArgsTuple >
+				static
+				ToCreate
+				create( ArgsTuple&, rod::common::Sequence<>&&, Provided&&... provided )
+				{
+					return ToCreate( std::forward< Provided >( provided )... );
+				}
+
 				template< typename ArgsTuple, int... Seq >
 				static
 				ToCreate

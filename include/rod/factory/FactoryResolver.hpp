@@ -51,6 +51,18 @@ namespace rod
 			template< typename FactoryType, typename Dependencies >
 			struct CreateFactory;
 
+			template< typename FactoryType >
+			struct CreateFactory< FactoryType, TypeList<> >
+			{
+				template< typename Context >
+				static
+				FactoryType
+				create( Context& context )
+				{
+					return FactoryType();
+				}
+			};
+
 			template< typename FactoryType, typename... Dependency >
 			struct CreateFactory< FactoryType, TypeList< Dependency... > >
 			{
