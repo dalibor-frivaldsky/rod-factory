@@ -57,7 +57,7 @@ namespace rod
 				template< typename Context >
 				static
 				FactoryType
-				create( Context& context )
+				create( Context& )
 				{
 					return FactoryType();
 				}
