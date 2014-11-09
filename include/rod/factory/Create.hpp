@@ -21,6 +21,19 @@ namespace factory
 		template< typename ToCreate, typename Deps >
 		struct Create;
 
+		template< typename ToCreate >
+		struct Create< ToCreate, TypeList<> >
+		{
+			template< typename Context, typename... ToForward >
+			static
+			ToCreate
+			create( Context&, ToForward&&... toForward )
+			{
+				return ToCreate(
+					std::forward< ToForward >( toForward )... );
+			}
+		};
+
 		template< typename ToCreate, typename... Dep >
 		struct Create< ToCreate, TypeList< Dep... > >
 		{
